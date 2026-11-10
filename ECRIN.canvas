@@ -1,0 +1,19 @@
+{
+	"nodes":[
+		{"id":"b9cde1ddf929ef83","type":"text","text":"4 CATEGORIE DU PRODUIT","x":-440,"y":-20,"width":228,"height":100,"color":"1"},
+		{"id":"c4e0d9a9e3e1630a","type":"text","text":"PROJET ECRIN ","x":160,"y":-440,"width":165,"height":60,"color":"1"},
+		{"id":"e2d7884e63e3f1d1","type":"text","text":"- RDV et invitation (couple , famille et amis )\n- Mots doux \n- surprises\n- Réconciliations","x":-451,"y":260,"width":250,"height":260,"color":"4"},
+		{"id":"502df1c80f2abc4f","type":"text","text":"ARCHITECTURE TECHNIQUE ","x":140,"y":-20,"width":207,"height":100,"color":"1"},
+		{"id":"192cb180f247c28a","type":"text","text":"- App Mobile (Expéditeur)\n- SMS API (Twilio)\n- WebApp Destinataire (Lien Web)\n- Base de données / Notification\n","x":119,"y":260,"width":250,"height":260,"color":"4"},
+		{"id":"f48553be64cae92a","type":"text","text":"METADONNEES DU PROJET","x":640,"y":-20,"width":250,"height":100,"color":"1"},
+		{"id":"92cb806ceb78adc7","type":"text","text":"- type: [tache/livrable]\n- statut: [A faire/En cours]\n- module: [Mobile/Web/SMS]\n- priorite: [Haute/Moyenne]\n- deadline: YYYY-MM-DD","x":640,"y":260,"width":250,"height":260,"color":"4"}
+	],
+	"edges":[
+		{"id":"0204f62ee322b986","fromNode":"c4e0d9a9e3e1630a","fromSide":"bottom","toNode":"b9cde1ddf929ef83","toSide":"right"},
+		{"id":"02bd6031b91fbf0e","fromNode":"c4e0d9a9e3e1630a","fromSide":"bottom","toNode":"502df1c80f2abc4f","toSide":"top"},
+		{"id":"c33b873636f8968a","fromNode":"b9cde1ddf929ef83","fromSide":"bottom","toNode":"e2d7884e63e3f1d1","toSide":"top"},
+		{"id":"d31696e8fe78b746","fromNode":"c4e0d9a9e3e1630a","fromSide":"bottom","toNode":"f48553be64cae92a","toSide":"left"},
+		{"id":"d5146fb87ebc4ae8","fromNode":"502df1c80f2abc4f","fromSide":"bottom","toNode":"192cb180f247c28a","toSide":"top"},
+		{"id":"a6b823128a328980","fromNode":"f48553be64cae92a","fromSide":"bottom","toNode":"92cb806ceb78adc7","toSide":"top"}
+	]
+}

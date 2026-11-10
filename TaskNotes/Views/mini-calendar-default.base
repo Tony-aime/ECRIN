@@ -1,0 +1,74 @@
+filters:
+  and:
+    - file.hasTag("task")
+formulas:
+  priorityWeight: if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,-1))))
+  daysUntilDue: if((due.isEmpty() == false), ((number(date(due)) - number(today())) / 86400000).floor(), null)
+  dueIn: if(due.isEmpty(), "", if(formula.daysUntilDue == 0, "Aujourd'hui", if(formula.daysUntilDue > 0, (if((formula.daysUntilDue) >= 0 && (formula.daysUntilDue) < 2, (if((formula.daysUntilDue) >= 1000 || (formula.daysUntilDue) <= -1000, ("" + (formula.daysUntilDue)).replace(/\B(?=(\d{3})+(?!\d))/g, " "), ("" + (formula.daysUntilDue))) + " jour"), (if((formula.daysUntilDue) >= 1000 || (formula.daysUntilDue) <= -1000, ("" + (formula.daysUntilDue)).replace(/\B(?=(\d{3})+(?!\d))/g, " "), ("" + (formula.daysUntilDue))) + " jours"))), (if((formula.daysUntilDue * -1) >= 0 && (formula.daysUntilDue * -1) < 2, (if((formula.daysUntilDue * -1) >= 1000 || (formula.daysUntilDue * -1) <= -1000, ("" + (formula.daysUntilDue * -1)).replace(/\B(?=(\d{3})+(?!\d))/g, " "), ("" + (formula.daysUntilDue * -1))) + " jour de retard"), (if((formula.daysUntilDue * -1) >= 1000 || (formula.daysUntilDue * -1) <= -1000, ("" + (formula.daysUntilDue * -1)).replace(/\B(?=(\d{3})+(?!\d))/g, " "), ("" + (formula.daysUntilDue * -1))) + " jours de retard"))))))
+  daysUntilScheduled: if((scheduled.isEmpty() == false), ((number(date(scheduled)) - number(today())) / 86400000).floor(), null)
+  daysSinceCreated: ((number(now()) - number(file.ctime)) / 86400000).floor()
+  daysSinceModified: ((number(now()) - number(file.mtime)) / 86400000).floor()
+  isOverdue: (due.isEmpty() == false) && date(due) < today() && status != "done"
+  isDueToday: (due.isEmpty() == false) && date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")
+  isDueThisWeek: (due.isEmpty() == false) && date(due).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")
+  isScheduledToday: (scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")
+  isRecurring: recurrence && !recurrence.isEmpty()
+  hasTimeEstimate: timeEstimate && timeEstimate > 0
+  timeRemaining: if(timeEstimate && timeEstimate > 0, timeEstimate - if(timeEntries, list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0), 0), null)
+  efficiencyRatio: if(timeEstimate && timeEstimate > 0 && timeEntries, (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / timeEstimate * 100).round(), null)
+  timeTrackedThisWeek: if(timeEntries, list(timeEntries).filter(value.endTime && date(value.startTime) >= today() - "7d").map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round(), 0)
+  timeTrackedToday: if(timeEntries, list(timeEntries).filter(value.endTime && date(value.startTime).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round(), 0)
+  dueMonth: if((due.isEmpty() == false), date(due).format("YYYY-MM"), "Sans échéance")
+  dueWeek: if((due.isEmpty() == false), date(due).format("YYYY-[W]WW"), "Sans échéance")
+  scheduledMonth: if((scheduled.isEmpty() == false), date(scheduled).format("YYYY-MM"), "Non planifiée")
+  scheduledWeek: if((scheduled.isEmpty() == false), date(scheduled).format("YYYY-[W]WW"), "Non planifiée")
+  dueDateCategory: if(due.isEmpty(), "Sans échéance", if(date(due) < today(), "En retard", if(date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD"), "Aujourd'hui", if(date(due).format("YYYY-MM-DD") == (today() + "1 day").format("YYYY-MM-DD"), "Demain", if(date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD"), "Cette semaine", "Plus tard")))))
+  timeEstimateCategory: if(!timeEstimate || timeEstimate == 0 || timeEstimate == null, "Sans estimation", if(timeEstimate < 30, "Rapide (<30 min)", if(timeEstimate <= 120, "Moyenne (30 min-2 h)", "Longue (>2 h)")))
+  ageCategory: if(((number(now()) - number(file.ctime)) / 86400000) < 1, "Aujourd'hui", if(((number(now()) - number(file.ctime)) / 86400000) < 7, "Cette semaine", if(((number(now()) - number(file.ctime)) / 86400000) < 30, "Ce mois-ci", "Plus anciennes")))
+  createdMonth: file.ctime.format("YYYY-MM")
+  modifiedMonth: file.mtime.format("YYYY-MM")
+  priorityCategory: if(priority=="none","None",if(priority=="low","Low",if(priority=="normal","Normal",if(priority=="high","High","No priority"))))
+  projectCount: (if((if(projects, list(projects).length, 0)) == 0, ("Aucun projet"), if((if(projects, list(projects).length, 0)) == 1, ("Un seul projet"), if((if(projects, list(projects).length, 0)) >= 0 && (if(projects, list(projects).length, 0)) < 2, ("Projet"), ("Plusieurs projets")))))
+  contextCount: (if((if(contexts, list(contexts).length, 0)) == 0, ("Aucun contexte"), if((if(contexts, list(contexts).length, 0)) == 1, ("Un seul contexte"), if((if(contexts, list(contexts).length, 0)) >= 0 && (if(contexts, list(contexts).length, 0)) < 2, ("Contexte"), ("Plusieurs contextes")))))
+  trackingStatus: if(!timeEstimate || timeEstimate == 0 || timeEstimate == null, "Sans estimation", if(!timeEntries || list(timeEntries).length == 0, "Non commencée", if(formula.efficiencyRatio < 100, "En deçà de l'estimation", "Au-delà de l'estimation")))
+  nextDate: if((due.isEmpty() == false) && (scheduled.isEmpty() == false), if(date(due) < date(scheduled), due, scheduled), if((due.isEmpty() == false), due, scheduled))
+  daysUntilNext: if((due.isEmpty() == false) && (scheduled.isEmpty() == false), min(formula.daysUntilDue, formula.daysUntilScheduled), if((due.isEmpty() == false), formula.daysUntilDue, formula.daysUntilScheduled))
+  hasDate: (due.isEmpty() == false) || (scheduled.isEmpty() == false)
+  isToday: ((due.isEmpty() == false) && date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")) || ((scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") == today().format("YYYY-MM-DD"))
+  isThisWeek: ((due.isEmpty() == false) && date(due).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")) || ((scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(scheduled).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD"))
+  nextDateCategory: if(due.isEmpty() && scheduled.isEmpty(), "Sans date", if(((due.isEmpty() == false) && date(due) < today()) || ((scheduled.isEmpty() == false) && date(scheduled) < today()), "En retard / passée", if(((due.isEmpty() == false) && date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")) || ((scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")), "Aujourd'hui", if(((due.isEmpty() == false) && date(due).format("YYYY-MM-DD") == (today() + "1 day").format("YYYY-MM-DD")) || ((scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") == (today() + "1 day").format("YYYY-MM-DD")), "Demain", if(((due.isEmpty() == false) && date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")) || ((scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")), "Cette semaine", "Plus tard")))))
+  nextDateMonth: if((due.isEmpty() == false) && (scheduled.isEmpty() == false), if(date(due) < date(scheduled), date(due).format("YYYY-MM"), date(scheduled).format("YYYY-MM")), if((due.isEmpty() == false), date(due).format("YYYY-MM"), if((scheduled.isEmpty() == false), date(scheduled).format("YYYY-MM"), "Sans date")))
+  nextDateWeek: if((due.isEmpty() == false) && (scheduled.isEmpty() == false), if(date(due) < date(scheduled), date(due).format("YYYY-[W]WW"), date(scheduled).format("YYYY-[W]WW")), if((due.isEmpty() == false), date(due).format("YYYY-[W]WW"), if((scheduled.isEmpty() == false), date(scheduled).format("YYYY-[W]WW"), "Sans date")))
+  urgencyScore: if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - if(formula.daysUntilNext, formula.daysUntilNext, 0)) + (1 - ((number(date(formula.nextDate)) - number(date(date(formula.nextDate).format("YYYY-MM-DD")))) / 86400000)))
+  timeTrackedFormatted: if(timeEntries, if(list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) >= 60, (if(((list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / 60).floor()) >= 1000 || ((list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / 60).floor()) <= -1000, ("" + ((list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / 60).floor())).replace(/\B(?=(\d{3})+(?!\d))/g, " "), ("" + ((list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / 60).floor()))) + " h " + if(((list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) % 60).round()) >= 1000 || ((list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) % 60).round()) <= -1000, ("" + ((list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) % 60).round())).replace(/\B(?=(\d{3})+(?!\d))/g, " "), ("" + ((list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) % 60).round()))) + " min"), (if((list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round()) >= 1000 || (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round()) <= -1000, ("" + (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round())).replace(/\B(?=(\d{3})+(?!\d))/g, " "), ("" + (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round()))) + " min")), (if((0) >= 1000 || (0) <= -1000, ("" + (0)).replace(/\B(?=(\d{3})+(?!\d))/g, " "), ("" + (0))) + " min"))
+  dueDateDisplay: if(due.isEmpty(), "", if(date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD"), "Aujourd'hui", if(date(due).format("YYYY-MM-DD") == (today() + "1 day").format("YYYY-MM-DD"), "Demain", if(date(due).format("YYYY-MM-DD") == (today() - "1 day").format("YYYY-MM-DD"), "Hier", if(date(due) < today(), (if((formula.daysUntilDue * -1) >= 0 && (formula.daysUntilDue * -1) < 2, ("Il y a " + if((formula.daysUntilDue * -1) >= 1000 || (formula.daysUntilDue * -1) <= -1000, ("" + (formula.daysUntilDue * -1)).replace(/\B(?=(\d{3})+(?!\d))/g, " "), ("" + (formula.daysUntilDue * -1))) + " jour"), ("Il y a " + if((formula.daysUntilDue * -1) >= 1000 || (formula.daysUntilDue * -1) <= -1000, ("" + (formula.daysUntilDue * -1)).replace(/\B(?=(\d{3})+(?!\d))/g, " "), ("" + (formula.daysUntilDue * -1))) + " jours"))), if(date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD"), date(due).format("ddd"), date(due).format("MMM D")))))))
+views:
+  - type: tasknotesMiniCalendar
+    name: À échéance
+    order:
+      - status
+      - priority
+      - due
+      - scheduled
+      - projects
+      - contexts
+      - file.tags
+      - blockedBy
+      - file.name
+      - recurrence
+      - complete_instances
+      - file.tasks
+    sort:
+      - property: due
+        direction: ASC
+    dateProperty: due
+  - type: tasknotesMiniCalendar
+    name: Planifiées
+    order: []
+    dateProperty: scheduled
+  - type: tasknotesMiniCalendar
+    name: Créées
+    dateProperty: file.ctime
+  - type: tasknotesMiniCalendar
+    name: Modifiées
+    dateProperty: file.mtime
